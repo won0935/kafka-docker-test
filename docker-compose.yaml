@@ -1,0 +1,32 @@
+version: '2'
+
+networks:
+  test:
+
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - test
+
+  kafka:
+    image: wurstmeister/kafka:2.12-2.0.1
+    container_name: kafka
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092 #kafka 브로커를 가리키는 사용 가능 주소 목록. kafka는 초기 연결 시 이를 client에게 보냄
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092 #kafka 브로커가 들어오는 연결을 수신 대기하는 주소 및 리스너 이름 목록
+      KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 #ZooKeeper 연결 문자열. ,로 구분 ex) <zookeeper서버의 hostname>:<zookeeper서버의 포트번호>
+      KAFKA_CREATE_TOPICS: "javainuse-topic:1:1"   # Topic명:Partition개수:Replica개수
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    networks:
+      - test
